@@ -6,8 +6,8 @@
 - [x] Schema
 - [x] Queries
 - [x] Mutations
-- [] Resolver
-- [] Relationships
+- [x] Resolver & Relationships
+- [x] Migrating from REST to GraphQL
 
 Copyright
 
