@@ -1,0 +1,9 @@
+body {
+  background: white url("images/cat1.jpg") no-repeat;
+}
+
+li a {
+  color: white;
+  font-size: 24px;
+  font-weight: 600;
+}
