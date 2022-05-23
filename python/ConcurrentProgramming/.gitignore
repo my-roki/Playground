@@ -1,0 +1,9 @@
+# python venv
+venv
+
+# secret keys
+memo.txt
+03.Concurrent_Programming_Scraping/secrets.json
+
+# data
+images
