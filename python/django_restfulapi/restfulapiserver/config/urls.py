@@ -22,5 +22,6 @@ urlpatterns = [
     path("admin/", admin.site.urls),
     path("user/", views.user_list),
     path("user/<int:pk>", views.user_detail),
+    path("login/", views.login),
     path("api-auth/", include("rest_framework.urls", namespace="rest_framework")),
 ]
