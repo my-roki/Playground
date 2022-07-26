@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Time Until Christmas Eve<</title>
+    <meta charset="UTF-8" />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <h1 id="title">Time Until ...</h1>
+
+    <div id="result-container">
+      <h2 class="js-clock">120d 10h 22m 19s</h2>
+      <span class="again">&larr; Again</span>
+    </div>
+
+    <div id="input-container">
+      <form id="input-form" class="input-form">
+        <label for="name"> What day would you like to? </label>
+        <input type="text" id="name" placeholder="ex. Christmas!" />
+        <label id="label-date" for="date">
+          What date are you waiting for?
+        </label>
+        <input
+          type="text"
+          id="date"
+          placeholder="ex. yyyy-mm-dd"
+          onKeyup="validCheck(this)"
+        />
+        <input type="submit" value="Calculate" disabled="disabled" />
+        <input type="button" value="Back" />
+      </form>
+    </div>
+
+    <script src="src/index.js"></script>
+  </body>
+</html>
