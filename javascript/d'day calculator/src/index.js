@@ -14,6 +14,12 @@ const againBtn = document.querySelector(".again");
 const backBtn = document.querySelector("#input-form input[type='button']");
 
 let interval = null;
+
+if (!localStorage.getItem("name") || !localStorage.getItem("date")) {
+  localStorage.setItem("name", "Christmas!");
+  localStorage.setItem("date", `${new Date().getFullYear()}-12-25`);
+}
+
 function clear(interval) {
   if (interval) {
     clearInterval(interval);
@@ -43,20 +49,10 @@ function validCheck(element) {
   }
 }
 
-function reset() {
-  inputContainer.style.display = "block";
-  resultContainer.style.display = "none";
-}
-
-function back() {
-  inputContainer.style.display = "none";
-  resultContainer.style.display = "block";
-}
-
-function calculateDday(event) {
-  event.preventDefault();
+function calculateDday(name, date) {
+  clear(interval);
   const now = new Date();
-  const setDate = new Date(ddayDate.value);
+  const setDate = new Date(date);
 
   const distance = setDate.getTime() - now.getTime();
   const day = String(Math.floor(distance / (1000 * 60 * 60 * 24)));
@@ -70,13 +66,39 @@ function calculateDday(event) {
     2,
     "0"
   );
-  title.innerText = `Time Until ${ddayName.value}`;
+  title.innerText = `Time Until ${name}`;
   clockTitle.innerText = `${day}d ${hours}h ${minutes}m ${seconds}s`;
 
-  interval = setInterval(calculateDday, 1000, event);
+  interval = setInterval(calculateDday, 1000, name, date);
 }
 
+function again() {
+  clear(interval);
+  title.innerText = "Time Until ...";
+  ddayName.value = "";
+  ddayDate.value = "";
+  validCheck(ddayDate);
+
+  inputContainer.style.display = "block";
+  resultContainer.style.display = "none";
+}
+
+function back() {
+  const name = localStorage.getItem("name");
+  const date = localStorage.getItem("date");
+
+  inputContainer.style.display = "none";
+  resultContainer.style.display = "block";
+  calculateDday(name, date);
+}
+
+function handleSubmit(event) {
+  event.preventDefault();
+  localStorage.setItem("name", ddayName.value);
+  localStorage.setItem("date", ddayDate.value);
+}
+
+inputForm.addEventListener("submit", handleSubmit);
 inputForm.addEventListener("submit", back);
-inputForm.addEventListener("submit", calculateDday);
-againBtn.addEventListener("click", reset);
+againBtn.addEventListener("click", again);
 backBtn.addEventListener("click", back);
