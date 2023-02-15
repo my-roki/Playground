@@ -38,8 +38,31 @@ public class AuthService {
 		memberRepository.save(member);
 	}
 
+	public Member login(String username, String password) {
+		Member member = findMemberByUsername(username);
+
+		if (!password.equals(member.getPassword())) {
+			throw new CustomException(ExceptionCode.WRONG_PASSWORD, null);
+		}
+
+		return member;
+	}
+
+	public Member findMe(Long memberId) {
+		Optional<Member> optionalMember = memberRepository.findById(memberId);
+
+		return optionalMember.orElseThrow(
+			() -> new CustomException(ExceptionCode.NOT_FOUND, "Could not found user"));
+	}
+
 	public Boolean existMemberByUsername(String username) {
 		Optional<Member> optionalMember = memberRepository.findByUsername(username);
 		return optionalMember.isPresent();
+	}
+
+	public Member findMemberByUsername(String username) {
+		Optional<Member> optionalMember = memberRepository.findByUsername(username);
+		return optionalMember.orElseThrow(
+			() -> new CustomException(ExceptionCode.NOT_FOUND, "Could not found user for " + username));
 	}
 }

@@ -11,7 +11,8 @@ import lombok.Getter;
 @AllArgsConstructor
 public enum ExceptionCode {
 	NOT_FOUND(404, "Contents not found."),
-	ALREADY_EXIST(409, "Contents already exist.");
+	ALREADY_EXIST(409, "Contents already exist."),
+	WRONG_PASSWORD(409, "Password does not matches." );
 
 	private final int status;
 	private final String message;
