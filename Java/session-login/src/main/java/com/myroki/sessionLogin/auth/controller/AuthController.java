@@ -47,6 +47,9 @@ public class AuthController {
 		Member member = authService.login(username, password);
 		String greeting = "Hello " + username;
 
+		// 이미 로그인한 사용자라면 이전 로그인은 무효합니다.
+		sessionManager.getSessionCheck(member.getId());
+
 		// sessionStore에 member 객체를 저장합니다.
 		Cookie cookie = sessionManager.createSession(response, member);
 		log.info("쿠키 생성 완료 : {}", cookie);
