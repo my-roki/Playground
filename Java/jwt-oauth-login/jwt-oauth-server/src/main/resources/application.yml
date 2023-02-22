@@ -1,1 +1,31 @@
+spring:
+  h2:
+    console:
+      enabled: true
+      path: /h2
+  datasource:
+    driver-class-name: org.h2.Driver
+    url: "jdbc:h2:mem:test;MODE=MYSQL"
+    username: sa
+    password:
+  jpa:
+    hibernate:
+      ddl-auto: create
+    defer-datasource-initialization: true  # 초기 데이터값 입력
+    show-sql: true
+  sql:
+    init:
+      encoding: UTF-8
+      mode: always
 
+logging:
+  level:
+    org:
+      springframework:
+        orm:
+          jpa: DEBUG
+
+server:
+  servlet:
+    encoding:
+      force-response: true
