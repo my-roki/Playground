@@ -1,0 +1,47 @@
+.container {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.loginContainer {
+  border: 1px solid rgba(0, 0, 0, 0.2);
+  border-radius: 4px;
+  width: 512px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+.socialContainer {
+  width: 80%;
+  margin: 36px;
+  box-sizing: content-box;
+  display: flex;
+  flex-direction: column;
+}
+
+.socialButton {
+  text-align: center;
+  display: block;
+  line-height: 40px;
+  margin-bottom: 16px;
+  border-radius: 4px;
+  border: 1px solid #e8e8e8;
+  color: black;
+  text-decoration: none;
+}
+
+.socialButton:hover {
+    background-color: #e8e8e8;
+}
+
+.socialImage {
+  width: 32px;
+  height: 32px;
+  float: left;
+  margin-top: 5.2px;
+  margin-left: 10px;
+}

@@ -1,0 +1,33 @@
+* {
+  font-family: "Courier New", Courier, monospace;
+}
+
+:root {
+  --account-button-color: rgb(50, 98, 209);
+}
+
+.header {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+}
+
+.accountButton {
+  width: 128px;
+  height: 56px;
+  font-size: 16px;
+  background: inherit;
+  border: 1px solid var(--account-button-color);
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.accountButton:hover {
+  color: var(--account-button-color);
+}
+
+.container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
