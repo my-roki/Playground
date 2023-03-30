@@ -17,6 +17,16 @@ spring:
     init:
       encoding: UTF-8
       mode: always
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            clientId: ${GOOGLE_CLIENT_ID}
+            clientSecret: ${GOOGLE_CLIENT_SECRET}
+            scope:
+              - email
+              - profile
 
 logging:
   level:
@@ -29,3 +39,13 @@ server:
   servlet:
     encoding:
       force-response: true
+mail:
+  address:
+    admin: Hello
+
+
+jwt:
+  key:
+    secret: ${JWT_SECRET_KEY}
+  access-token-expiration-minutes: 30
+  refresh-token-expiration-minutes: 480

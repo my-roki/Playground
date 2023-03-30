@@ -14,6 +14,10 @@ import lombok.RequiredArgsConstructor;
 public class MemberService {
 	private final MemberRepository memberRepository;
 
+	public Member createMember(Member member) {
+		return memberRepository.save(member);
+	}
+
 	public List<Member> findAllMembers() {
 		return memberRepository.findAll();
 
