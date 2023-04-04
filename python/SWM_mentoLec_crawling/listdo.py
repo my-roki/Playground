@@ -153,7 +153,7 @@ if __name__ == "__main__":
                     block += tmp
 
                 content = f"""
-                [{time.strftime('%Y-%m-%d %H:%M:%S')}]\n새로운 강의 업데이트 알림!({total_contents} -> {new_total_lec})\n\n상위 10개 강의 리스트\n{block}
+                [{time.strftime('%Y-%m-%d %H:%M:%S')}]\n새로운 강의 업데이트 알림! ({total_contents} -> {new_total_lec})\n\n<상위 10개 강의 리스트>\n{block}\n\n신청하기: https://swmaestro.org/sw/mypage/mentoLec/list.do?menuNo=200046
                 """
                 discord_webhook(DISCORD_WEBHOOK_URL, content)
             # 멘토링 강의 변경 내역이 없거나 적어졌을 때는 아무것도 하지 않습니다.
