@@ -118,8 +118,15 @@ if __name__ == "__main__":
 
             # 처음 시작할 때 로그인을 시도합니다.
             if total_contents == -1:
-                jsessionid = get_jsessionid(USERNAME, ENCRYPTED_PASSWORD)
-                login_cnt = 0
+                for _ in range(5):
+                    try:
+                        jsessionid = get_jsessionid(USERNAME, ENCRYPTED_PASSWORD)
+                        login_cnt = 0
+                        break
+                    except:
+                        continue
+                else:
+                    raise Exception("로그인 실행횟수 초과!")
 
             # 10번 로그인 시도해도 안 되면 로그인에 문제가 생겼다고 판단하고 중단
             if login_cnt > 10:
@@ -127,7 +134,15 @@ if __name__ == "__main__":
                 raise Exception("로그인 설정에 문제가 생겼습니다.")
 
             # 멘토링 페이지 정보를 가져옵니다.
-            html_doc = get_content(jsessionid)
+            for _ in range(5):
+                try:
+                    html_doc = get_content(jsessionid)
+                    break
+                except:
+                    continue
+            else:
+                raise Exception("페이지 정보 불러오기 횟수 초과!")
+
             if "로그인이 필요한 페이지입니다. 로그인페이지로 이동하시겠습니까?" in html_doc:
                 login_cnt += 1
                 print(f"[info] 로그인 실패. 로그인을 다시 시도합니다.(시도횟수 : {login_cnt})")
