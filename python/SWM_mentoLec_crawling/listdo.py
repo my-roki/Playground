@@ -121,7 +121,6 @@ if __name__ == "__main__":
                 for _ in range(5):
                     try:
                         jsessionid = get_jsessionid(USERNAME, ENCRYPTED_PASSWORD)
-                        login_cnt = 0
                         break
                     except:
                         continue
@@ -147,6 +146,9 @@ if __name__ == "__main__":
                 login_cnt += 1
                 print(f"[info] 로그인 실패. 로그인을 다시 시도합니다.(시도횟수 : {login_cnt})")
                 continue
+
+            # 로그인 시 초기화
+            login_cnt = 0
 
             # Parsing
             soup = BeautifulSoup(html_doc, "html.parser")
