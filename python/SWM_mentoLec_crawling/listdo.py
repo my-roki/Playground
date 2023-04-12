@@ -3,6 +3,7 @@ import requests
 import re
 import time
 import random
+import logging
 from dotenv import load_dotenv
 from bs4 import BeautifulSoup
 
@@ -99,6 +100,9 @@ if __name__ == "__main__":
     # InsecureRequestWarning 메세지 없애기
     requests.packages.urllib3.disable_warnings(requests.packages.urllib3.exceptions.InsecureRequestWarning)
 
+    # logging config
+    logging.basicConfig(format="%(asctime)s [%(levelname)s] %(message)s", level=logging.INFO)
+
     """
     프로젝트 최상단에 .env 파일 만들어서 설정하기
     """
@@ -144,7 +148,7 @@ if __name__ == "__main__":
 
             if "로그인이 필요한 페이지입니다. 로그인페이지로 이동하시겠습니까?" in html_doc:
                 login_cnt += 1
-                print(f"[info] 로그인 실패. 로그인을 다시 시도합니다.(시도횟수 : {login_cnt})")
+                logging.warning(f"로그인 실패. 로그인을 다시 시도합니다.(시도횟수 : {login_cnt})")
                 continue
 
             # 로그인 시 초기화
@@ -160,6 +164,7 @@ if __name__ == "__main__":
                 content = f"""
                 [{time.strftime('%Y-%m-%d %H:%M:%S')}]\n매크로를 시작합니다.\n현재 등록된 강의 개수는 {new_total_lec}개 입니다.
                 """
+                logging.info(content)
                 discord_webhook(DISCORD_WEBHOOK_URL, content)
             # 멘토링 강의가 추가된 상황 업데이트
             elif total_contents < new_total_lec:
@@ -172,6 +177,7 @@ if __name__ == "__main__":
                 content = f"""
                 [{time.strftime('%Y-%m-%d %H:%M:%S')}]\n새로운 강의 업데이트 알림! ({total_contents} -> {new_total_lec})\n\n<상위 10개 강의 리스트>\n{block}\n\n신청하기: https://swmaestro.org/sw/mypage/mentoLec/list.do?menuNo=200046
                 """
+                logging.info(content)
                 discord_webhook(DISCORD_WEBHOOK_URL, content)
             # 멘토링 강의 변경 내역이 없거나 적어졌을 때는 아무것도 하지 않습니다.
             elif total_contents >= new_total_lec:
@@ -181,8 +187,9 @@ if __name__ == "__main__":
             total_contents = new_total_lec
         except Exception as e:
             content = f"[{time.strftime('%Y-%m-%d %H:%M:%S')}]\n에러 발생 \n ```\n{e}\n```"
+            logging.error(content)
             discord_webhook(DISCORD_WEBHOOK_URL, content)
             break
 
-    print("[Error] 에러 발생으로 매크로를 종료합니다.")
+    logging.error("에러 발생으로 매크로를 종료합니다.")
     discord_webhook(DISCORD_WEBHOOK_URL, "[Error] 에러 발생으로 매크로를 종료합니다.")
