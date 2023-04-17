@@ -137,16 +137,18 @@ if __name__ == "__main__":
                 raise Exception("로그인 설정에 문제가 생겼습니다.")
 
             # 멘토링 페이지 정보를 가져옵니다.
-            for _ in range(5):
+            for i in range(5):
                 try:
                     html_doc = get_content(jsessionid)
                     break
-                except:
+                except Exception as e:
+                    logging.warning(f"페이지 정보 불러오기 실패. 다시 시도합니다.(시도횟수 : {i})")
+                    logging.warning(e)
                     continue
             else:
                 raise Exception("페이지 정보 불러오기 횟수 초과!")
 
-            if "로그인이 필요한 페이지입니다. 로그인페이지로 이동하시겠습니까?" in html_doc:
+            if "로그인이 필요한 페이지입니다. 로그인페이지로 이동하시겠습니까?" in html_doc or "잘못된 접근입니다. 해당 세션을 전체 초기화 하였습니다." in html_doc:
                 login_cnt += 1
                 logging.warning(f"로그인 실패. 로그인을 다시 시도합니다.(시도횟수 : {login_cnt})")
                 continue
