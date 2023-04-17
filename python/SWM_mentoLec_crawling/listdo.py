@@ -158,6 +158,7 @@ if __name__ == "__main__":
 
             # Parsing
             soup = BeautifulSoup(html_doc, "html.parser")
+            soup = soup.find_all("div", class_="bbs-list")[-1]
             new_total_lec = get_total_lec(soup)
 
             # 처음 데이터를 불러온 상황
@@ -190,6 +191,7 @@ if __name__ == "__main__":
         except Exception as e:
             content = f"[{time.strftime('%Y-%m-%d %H:%M:%S')}]\n에러 발생 \n ```\n{e}\n```"
             logging.error(content)
+            logging.info(html_doc)
             discord_webhook(DISCORD_WEBHOOK_URL, content)
             break
 
