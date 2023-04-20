@@ -26,7 +26,7 @@ def get_jsessionid(username: str, encrypted_password: str) -> str:
         url,
         headers=headers,
         data=payload,
-        timeout=5,
+        timeout=10,
         verify=False,
     )
 
@@ -51,7 +51,7 @@ def get_content(jsessionid: str) -> str:
         "GET",
         url,
         headers=headers,
-        timeout=5,
+        timeout=10,
         verify=False,
         cookies=cookie,
     )
@@ -122,11 +122,13 @@ if __name__ == "__main__":
 
             # 처음 시작할 때 로그인을 시도합니다.
             if total_contents == -1:
-                for _ in range(5):
+                for i in range(5):
                     try:
                         jsessionid = get_jsessionid(USERNAME, ENCRYPTED_PASSWORD)
                         break
                     except:
+                        logging.warning(f"로그인 실패. 다시 시도합니다.(시도횟수 : {i+1})")
+                        logging.warning(e)
                         continue
                 else:
                     raise Exception("로그인 실행횟수 초과!")
@@ -142,7 +144,7 @@ if __name__ == "__main__":
                     html_doc = get_content(jsessionid)
                     break
                 except Exception as e:
-                    logging.warning(f"페이지 정보 불러오기 실패. 다시 시도합니다.(시도횟수 : {i})")
+                    logging.warning(f"페이지 정보 불러오기 실패. 다시 시도합니다.(시도횟수 : {i+1})")
                     logging.warning(e)
                     continue
             else:
