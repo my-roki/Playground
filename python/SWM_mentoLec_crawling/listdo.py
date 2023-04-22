@@ -143,6 +143,16 @@ if __name__ == "__main__":
                 try:
                     html_doc = get_content(jsessionid)
                     break
+                except ConnectionResetError as cre:
+                    logging.warning(f"ConnectionResetError. 다시 시도합니다.(시도횟수 : {i+1})")
+                    logging.warning(e)
+                    jsessionid = get_jsessionid(USERNAME, ENCRYPTED_PASSWORD)
+                    continue
+                except ConnectionError as nce:
+                    logging.warning(f"NewConnectionError. 다시 시도합니다.(시도횟수 : {i+1})")
+                    logging.warning(e)
+                    jsessionid = get_jsessionid(USERNAME, ENCRYPTED_PASSWORD)
+                    continue
                 except Exception as e:
                     logging.warning(f"페이지 정보 불러오기 실패. 다시 시도합니다.(시도횟수 : {i+1})")
                     logging.warning(e)
