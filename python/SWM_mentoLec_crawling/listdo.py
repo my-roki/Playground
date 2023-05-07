@@ -201,7 +201,7 @@ if __name__ == "__main__":
                 l = get_lec_info(soup)
                 block = ""
                 for i in l:
-                    tmp = f'{i.get("id")}) {i.get("date")} {i.get("mento")} <https://swmaestro.org/{i.get("link")}|{i.get("title")}>\n'
+                    tmp = f'{i.get("id")}. {i.get("date")} {i.get("mento")} <https://swmaestro.org/{i.get("link")}|{i.get("title")}>\n'
                     block += tmp
 
                 content = f"""
