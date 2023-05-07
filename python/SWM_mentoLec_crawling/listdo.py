@@ -76,6 +76,7 @@ def get_lec_info(soup: BeautifulSoup) -> list:
 
         lec_id = info.find_all("td")[0].get_text().strip().replace("\n", "")
         lec_tit = info.find_all("div", class_="rel")[-1].find("a").get_text().strip().replace("\n", "")
+        lec_link = info.find_all("div", class_="rel")[-1].find("a", href=True).get("href")
         lec_date = info.find_all("td")[3].get_text().strip().replace("\n", "")
         lec_date = re.sub(r"\s", "", lec_date).replace("&nbsp", " ")
         lec_mento = info.find_all("td")[6].get_text().strip().replace("\n", "")
@@ -83,6 +84,7 @@ def get_lec_info(soup: BeautifulSoup) -> list:
         lec_dict = dict(
             id=lec_id,
             title=lec_tit,
+            link=lec_link,
             date=lec_date,
             mento=lec_mento,
         )
@@ -199,11 +201,11 @@ if __name__ == "__main__":
                 l = get_lec_info(soup)
                 block = ""
                 for i in l:
-                    tmp = f'{i.get("id"), i.get("title"), i.get("date"), i.get("mento")}\n'
+                    tmp = f'{i.get("id")}) {i.get("date")} {i.get("mento")} <https://swmaestro.org/{i.get("link")}|{i.get("title")}>\n'
                     block += tmp
 
                 content = f"""
-                [{time.strftime('%Y-%m-%d %H:%M:%S')}]\n새로운 강의 업데이트 알림! ({total_contents} -> {new_total_lec})\n\n<상위 10개 강의 리스트>\n{block}\n\n신청하기: https://swmaestro.org/sw/mypage/mentoLec/list.do?menuNo=200046
+                [{time.strftime('%Y-%m-%d %H:%M:%S')}]\n새로운 강의 업데이트 알림! ({total_contents} -> {new_total_lec})\n\n<상위 10개 강의 리스트>\n{block}\n\n전체보기: https://swmaestro.org/sw/mypage/mentoLec/list.do?menuNo=200046
                 """
                 logging.info(content)
                 slack_message(SLACK_TOKEN, "#98-mentoring-alert", content)
