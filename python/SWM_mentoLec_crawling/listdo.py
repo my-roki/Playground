@@ -4,8 +4,11 @@ import re
 import time
 import random
 import logging
+
 from dotenv import load_dotenv
 from bs4 import BeautifulSoup
+
+from message_bot import MessageBot
 
 
 def get_jsessionid(username: str, encrypted_password: str) -> str:
@@ -93,23 +96,6 @@ def get_lec_info(soup: BeautifulSoup) -> list:
     return result
 
 
-def discord_webhook(DISCORD_WEBHOOK_URL: str, content: str):
-    message = {"content": content}
-    requests.post(DISCORD_WEBHOOK_URL, data=message)
-
-
-# 메시지를 보내는 부분. 함수 안 argument 순서 :
-# token : Slack Bot의 토큰
-# channel : 메시지를 보낼 채널 #stock_notice
-# text : Slack Bot 이 보낼 텍스트 메시지. 마크다운 형식이 지원된다.
-def slack_message(token, channel, text):
-    response = requests.post(
-        "https://slack.com/api/chat.postMessage",
-        headers={"Authorization": "Bearer " + token},
-        data={"channel": channel, "text": text},
-    )
-
-
 if __name__ == "__main__":
     # InsecureRequestWarning 메세지 없애기
     requests.packages.urllib3.disable_warnings(requests.packages.urllib3.exceptions.InsecureRequestWarning)
@@ -126,6 +112,12 @@ if __name__ == "__main__":
     ENCRYPTED_PASSWORD = os.getenv("ENCRYPTED_PASSWORD")
     DISCORD_WEBHOOK_URL = os.getenv("DISCORD_WEBHOOK_URL")
     SLACK_TOKEN = os.getenv("SLACK_TOKEN")
+
+    # 메세지 봇 객체 생성
+    message_bot = MessageBot(
+        discord_webhook_url=DISCORD_WEBHOOK_URL,
+        slack_token=SLACK_TOKEN,
+    )
 
     # 매크로에 필요한 변수 설정
     total_contents = -1
@@ -150,7 +142,7 @@ if __name__ == "__main__":
 
             # 10번 로그인 시도해도 안 되면 로그인에 문제가 생겼다고 판단하고 중단
             if login_cnt > 10:
-                discord_webhook(DISCORD_WEBHOOK_URL, "로그인 설정에 문제가 생겼습니다.")
+                message_bot.discord_message("로그인 설정에 문제가 생겼습니다.")
                 raise Exception("로그인 설정에 문제가 생겼습니다.")
 
             # 멘토링 페이지 정보를 가져옵니다.
@@ -195,7 +187,7 @@ if __name__ == "__main__":
                 [{time.strftime('%Y-%m-%d %H:%M:%S')}]\n매크로를 시작합니다.\n현재 등록된 강의 개수는 {new_total_lec}개 입니다.
                 """
                 logging.info(content)
-                discord_webhook(DISCORD_WEBHOOK_URL, content)
+                message_bot.discord_message(content)
             # 멘토링 강의가 추가된 상황 업데이트
             elif total_contents < new_total_lec:
                 l = get_lec_info(soup)
@@ -208,7 +200,7 @@ if __name__ == "__main__":
                 [{time.strftime('%Y-%m-%d %H:%M:%S')}]\n새로운 강의 업데이트 알림! ({total_contents} -> {new_total_lec})\n\n<상위 10개 강의 리스트>\n{block}\n\n전체보기: https://swmaestro.org/sw/mypage/mentoLec/list.do?menuNo=200046
                 """
                 logging.info(content)
-                slack_message(SLACK_TOKEN, "#98-mentoring-alert", content)
+                message_bot.slack_message("#98-mentoring-alert", content)
             # 멘토링 강의 변경 내역이 없거나 적어졌을 때는 아무것도 하지 않습니다.
             elif total_contents >= new_total_lec:
                 pass
@@ -219,8 +211,8 @@ if __name__ == "__main__":
             content = f"[{time.strftime('%Y-%m-%d %H:%M:%S')}]\n에러 발생 \n ```\n{e}\n```"
             logging.error(content)
             logging.info(html_doc)
-            discord_webhook(DISCORD_WEBHOOK_URL, content)
+            message_bot.discord_message(content)
             break
 
     logging.error("에러 발생으로 매크로를 종료합니다.")
-    discord_webhook(DISCORD_WEBHOOK_URL, "[Error] 에러 발생으로 매크로를 종료합니다.")
+    message_bot.discord_message("[Error] 에러 발생으로 매크로를 종료합니다.")
