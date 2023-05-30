@@ -11,7 +11,7 @@ class MessageBot:
     # discord_webhook_url : Discord Webhook URL
     # content : Discord Webhook이 보낼 텍스트 메시지. 마크다운 형식이 지원된다.
     def discord_message(self, content: str) -> None:
-        if self.discord_webhook_url.startswith("https://discord.com/api/webhooks/"):
+        if not self.discord_webhook_url.startswith("https://discord.com/api/webhooks/"):
             raise Exception("Discord Webhook URL이 잘못되었습니다.")
 
         message = {"content": content}
