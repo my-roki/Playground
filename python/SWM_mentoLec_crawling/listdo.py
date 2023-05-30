@@ -8,68 +8,15 @@ import logging
 from dotenv import load_dotenv
 from bs4 import BeautifulSoup
 
+from request_bot import RequestBot
 from message_bot import MessageBot
 
 
-def get_jsessionid(username: str, encrypted_password: str) -> str:
-    session = requests.Session()  # 쿠키에 있는 JSESSIONID를 가져오기 위함
-    url = "https://swmaestro.org/sw/login.do"
-    payload = {
-        "username": username,
-        "password": encrypted_password,
-    }
-    headers = {
-        "Accept": "*/*",
-        "Accept-Encoding": "gzip, deflate, br",
-        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/111.0.0.0 Safari/537.36",
-    }
-
-    response = session.request(
-        "POST",
-        url,
-        headers=headers,
-        data=payload,
-        timeout=10,
-        verify=False,
-    )
-
-    if response.status_code == 200:
-        return session.cookies.get_dict().get("JSESSIONID")
-    else:
-        raise ValueError("JSESSIONID not found.")
-
-
-def get_content(jsessionid: str) -> str:
-    url = "https://swmaestro.org/sw/mypage/mentoLec/list.do?menuNo=200046"
-    headers = {
-        "Accept": "*/*",
-        "Accept-Encoding": "gzip, deflate, br",
-        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/111.0.0.0 Safari/537.36",
-    }
-    cookie = {
-        "JSESSIONID": jsessionid,
-    }
-
-    response = requests.request(
-        "GET",
-        url,
-        headers=headers,
-        timeout=10,
-        verify=False,
-        cookies=cookie,
-    )
-
-    if response.status_code != 200:
-        raise Exception("There was a problem loading the mentoLec page.")
-
-    return response.text
-
-
-def get_total_lec(soup: BeautifulSoup) -> int:
+def get_total_contents(soup: BeautifulSoup) -> int:
     return int(soup.find_all("strong", class_="color-blue2")[0].get_text())
 
 
-def get_lec_info(soup: BeautifulSoup) -> list:
+def get_content_info(soup: BeautifulSoup) -> list:
     lec_infos = soup.find("tbody").contents
 
     result = []
@@ -78,7 +25,7 @@ def get_lec_info(soup: BeautifulSoup) -> list:
             continue
 
         lec_id = info.find_all("td")[0].get_text().strip().replace("\n", "")
-        lec_tit = info.find_all("div", class_="rel")[-1].find("a").get_text().strip().replace("\n", "")
+        lec_title = info.find_all("div", class_="rel")[-1].find("a").get_text().strip().replace("\n", "")
         lec_link = info.find_all("div", class_="rel")[-1].find("a", href=True).get("href")
         lec_date = info.find_all("td")[3].get_text().strip().replace("\n", "")
         lec_date = re.sub(r"\s", "", lec_date).replace("&nbsp", " ")
@@ -86,7 +33,7 @@ def get_lec_info(soup: BeautifulSoup) -> list:
 
         lec_dict = dict(
             id=lec_id,
-            title=lec_tit,
+            title=lec_title,
             link=lec_link,
             date=lec_date,
             mento=lec_mento,
@@ -101,7 +48,7 @@ if __name__ == "__main__":
     requests.packages.urllib3.disable_warnings(requests.packages.urllib3.exceptions.InsecureRequestWarning)
 
     # logging config
-    logging.basicConfig(format="%(asctime)s [%(levelname)s] %(message)s", level=logging.INFO)
+    logging.basicConfig(format="[%(levelname)s] %(asctime)s %(message)s", level=logging.INFO)
 
     """
     프로젝트 최상단에 .env 파일 만들어서 설정하기
@@ -114,6 +61,7 @@ if __name__ == "__main__":
     SLACK_TOKEN = os.getenv("SLACK_TOKEN")
 
     # 메세지 봇 객체 생성
+    request_bot = RequestBot()
     message_bot = MessageBot(
         discord_webhook_url=DISCORD_WEBHOOK_URL,
         slack_token=SLACK_TOKEN,
@@ -121,98 +69,100 @@ if __name__ == "__main__":
 
     # 매크로에 필요한 변수 설정
     total_contents = -1
-    login_cnt = 0
+    crawling_fail_count = 0
     while True:
-        try:
-            # 요청은 밴을 방지하기 위해 랜덤하게 설정하기
-            time.sleep(random.randrange(3, 11))
-
-            # 처음 시작할 때 로그인을 시도합니다.
-            if total_contents == -1:
-                for i in range(5):
-                    try:
-                        jsessionid = get_jsessionid(USERNAME, ENCRYPTED_PASSWORD)
-                        break
-                    except:
-                        logging.warning(f"로그인 실패. 다시 시도합니다.(시도횟수 : {i+1})")
-                        logging.warning(e)
-                        continue
-                else:
-                    raise Exception("로그인 실행횟수 초과!")
-
-            # 10번 로그인 시도해도 안 되면 로그인에 문제가 생겼다고 판단하고 중단
-            if login_cnt > 10:
-                message_bot.discord_message("로그인 설정에 문제가 생겼습니다.")
-                raise Exception("로그인 설정에 문제가 생겼습니다.")
-
-            # 멘토링 페이지 정보를 가져옵니다.
-            for i in range(5):
-                try:
-                    html_doc = get_content(jsessionid)
-                    break
-                except ConnectionResetError as cre:
-                    logging.warning(f"ConnectionResetError. 다시 시도합니다.(시도횟수 : {i+1})")
-                    logging.warning(e)
-                    jsessionid = get_jsessionid(USERNAME, ENCRYPTED_PASSWORD)
-                    continue
-                except ConnectionError as nce:
-                    logging.warning(f"NewConnectionError. 다시 시도합니다.(시도횟수 : {i+1})")
-                    logging.warning(e)
-                    jsessionid = get_jsessionid(USERNAME, ENCRYPTED_PASSWORD)
-                    continue
-                except Exception as e:
-                    logging.warning(f"페이지 정보 불러오기 실패. 다시 시도합니다.(시도횟수 : {i+1})")
-                    logging.warning(e)
-                    continue
-            else:
-                raise Exception("페이지 정보 불러오기 횟수 초과!")
-
-            if "로그인이 필요한 페이지입니다. 로그인페이지로 이동하시겠습니까?" in html_doc or "잘못된 접근입니다. 해당 세션을 전체 초기화 하였습니다." in html_doc:
-                login_cnt += 1
-                logging.warning(f"로그인 실패. 로그인을 다시 시도합니다.(시도횟수 : {login_cnt})")
-                continue
-
-            # 로그인 시 초기화
-            login_cnt = 0
-
-            # Parsing
-            soup = BeautifulSoup(html_doc, "html.parser")
-            soup = soup.find_all("div", class_="bbs-list")[-1]
-            new_total_lec = get_total_lec(soup)
-
-            # 처음 데이터를 불러온 상황
-            if total_contents == -1:
-                # 크롤링을 시작한다는 메세지 알림
-                content = f"""
-                [{time.strftime('%Y-%m-%d %H:%M:%S')}]\n매크로를 시작합니다.\n현재 등록된 강의 개수는 {new_total_lec}개 입니다.
-                """
-                logging.info(content)
-                message_bot.discord_message(content)
-            # 멘토링 강의가 추가된 상황 업데이트
-            elif total_contents < new_total_lec:
-                l = get_lec_info(soup)
-                block = ""
-                for i in l:
-                    tmp = f'{i.get("id")}. {i.get("date")} {i.get("mento")} <https://swmaestro.org/{i.get("link")}|{i.get("title")}>\n'
-                    block += tmp
-
-                content = f"""
-                [{time.strftime('%Y-%m-%d %H:%M:%S')}]\n새로운 강의 업데이트 알림! ({total_contents} -> {new_total_lec})\n\n<상위 10개 강의 리스트>\n{block}\n\n전체보기: https://swmaestro.org/sw/mypage/mentoLec/list.do?menuNo=200046
-                """
-                logging.info(content)
-                message_bot.slack_message("#98-mentoring-alert", content)
-            # 멘토링 강의 변경 내역이 없거나 적어졌을 때는 아무것도 하지 않습니다.
-            elif total_contents >= new_total_lec:
-                pass
-
-            # 다음 상황을 확인하기 위해서 총 개수를 업데이트 합니다.
-            total_contents = new_total_lec
-        except Exception as e:
-            content = f"[{time.strftime('%Y-%m-%d %H:%M:%S')}]\n에러 발생 \n ```\n{e}\n```"
-            logging.error(content)
-            logging.info(html_doc)
-            message_bot.discord_message(content)
+        # 크롤링 과정에서 일정 횟수 이상 초과하면 더이상 크롤링을 하지 않습니다.
+        if crawling_fail_count > 10:
             break
+
+        # 크롤링은 1~5초 마다 한번씩 이루어집니다.
+        time.sleep(random.randrange(1, 6))
+
+        # 로그인을 시도합니다.
+        for i in range(1, 6):
+            try:
+                jsessionid = request_bot.POST(
+                    "https://swmaestro.org/sw/login.do",
+                    payload={"username": USERNAME, "password": ENCRYPTED_PASSWORD},
+                ).cookies.get("JSESSIONID")
+                break
+            except:
+                logging.warning(f"로그인 실패. 다시 시도합니다.(시도횟수 : {i})")
+                logging.warning(e)
+                continue
+        else:
+            raise Exception("로그인 실행횟수 초과!")
+
+        # 멘토링 페이지 정보를 가져옵니다.
+        for i in range(1, 6):
+            try:
+                html_doc = request_bot.GET(
+                    "https://swmaestro.org/sw/mypage/mentoLec/list.do?menuNo=200046",
+                    cookie={"JSESSIONID": jsessionid},
+                ).text
+                break
+            except ConnectionResetError as cre:
+                logging.warning(f"ConnectionResetError. 다시 시도합니다.(시도횟수 : {i})")
+                logging.warning(e)
+                continue
+            except ConnectionError as nce:
+                logging.warning(f"NewConnectionError. 다시 시도합니다.(시도횟수 : {i})")
+                logging.warning(e)
+                continue
+            except Exception as e:
+                logging.warning(f"페이지 정보 불러오기 실패. 다시 시도합니다.(시도횟수 : {i})")
+                logging.warning(e)
+                continue
+        else:
+            crawling_fail_count += 1
+            logging.warning(f"멘토링 페이지 불러오는 단계에서 페이지 정보를 불러올 수 없습니다. 처음부터 다시 시작합니다. (시도횟수 : {crawling_fail_count})")
+            continue
+
+        # 올바르게 로그인이 됐는지 확인합니다.
+        login_fail_messages = [
+            "로그인이 필요한 페이지입니다. 로그인페이지로 이동하시겠습니까?",
+            "잘못된 접근입니다. 해당 세션을 전체 초기화 하였습니다.",
+            "요청하신 페이지를 찾을수가 없습니다.",
+        ]
+
+        # html_doc 안에 login_fail_messages가 있으면 로그인이 필요한 페이지라고 판단합니다.
+        if any([message in html_doc for message in login_fail_messages]):
+            crawling_fail_count += 1
+            logging.warning(f"멘토링 페이지 불러오는 단계에서 로그인 정보를 찾을 수 없습니다. 처음부터 다시 시작합니다. (시도횟수 : {crawling_fail_count})")
+            continue
+
+        # Parsing
+        soup = BeautifulSoup(html_doc, "html.parser")
+        soup = soup.find_all("div", class_="bbs-list")[-1]
+        new_total_contents = get_total_contents(soup)
+
+        # 처음 데이터를 불러온 상황
+        if total_contents == -1:
+            # 크롤링을 시작한다는 메세지 알림
+            content = f"[{time.strftime('%Y-%m-%d %H:%M:%S')}]\n매크로를 시작합니다.\n현재 등록된 강의 개수는 {new_total_contents}개 입니다."
+            logging.info(content)
+            message_bot.discord_message(content)
+        # 멘토링 강의가 추가된 상황 업데이트
+        elif total_contents < new_total_contents:
+            block = ""
+            n = 5
+            for idx, i in enumerate(get_content_info(soup), 1):
+                block += f'{i.get("id")}. {i.get("date")} {i.get("mento")} <https://swmaestro.org/{i.get("link")}|{i.get("title")}>\n'
+                if idx == n:
+                    break
+
+            content = f"[{time.strftime('%Y-%m-%d %H:%M:%S')}]\n새로운 강의 업데이트 알림! ({total_contents} -> {new_total_contents})\n\n<상위 {n if n < 10 else 10}개 강의 리스트>\n{block}\n\n전체보기: https://swmaestro.org/sw/mypage/mentoLec/list.do?menuNo=200046"
+            logging.info(content)
+            message_bot.slack_message("#98-mentoring-alert", content)
+        # 멘토링 강의 변경 내역이 없거나 적어졌을 때는 아무것도 하지 않습니다.
+        elif total_contents >= new_total_contents:
+            pass
+
+        # 다음 상황을 확인하기 위해서 총 개수를 업데이트 합니다.
+        total_contents = new_total_contents
+
+        # 크롤링 성공했으므로, crawling_fail_count를 초기화 합니다.
+        crawling_fail_count = 0
 
     logging.error("에러 발생으로 매크로를 종료합니다.")
     message_bot.discord_message("[Error] 에러 발생으로 매크로를 종료합니다.")
