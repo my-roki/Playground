@@ -86,12 +86,13 @@ if __name__ == "__main__":
                     payload={"username": USERNAME, "password": ENCRYPTED_PASSWORD},
                 ).cookies.get("JSESSIONID")
                 break
-            except:
+            except Exception as e:
                 logging.warning(f"로그인 실패. 다시 시도합니다.(시도횟수 : {i})")
                 logging.warning(e)
                 continue
         else:
-            raise Exception("로그인 실행횟수 초과!")
+            logging.error("로그인 실행횟수 초과!")
+            break
 
         # 멘토링 페이지 정보를 가져옵니다.
         for i in range(1, 6):
