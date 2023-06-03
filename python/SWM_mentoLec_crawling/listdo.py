@@ -3,13 +3,13 @@ import requests
 import re
 import time
 import random
-import logging
 
 from dotenv import load_dotenv
 from bs4 import BeautifulSoup
 
 from request_bot import RequestBot
 from message_bot import MessageBot
+from logger import LoggerFactory
 
 
 def get_total_contents(soup: BeautifulSoup) -> int:
@@ -48,7 +48,8 @@ if __name__ == "__main__":
     requests.packages.urllib3.disable_warnings(requests.packages.urllib3.exceptions.InsecureRequestWarning)
 
     # logging config
-    logging.basicConfig(format="[%(levelname)s] %(asctime)s %(message)s", level=logging.INFO)
+    LoggerFactory.create_logger()
+    logging = LoggerFactory.get_logger()
 
     """
     프로젝트 최상단에 .env 파일 만들어서 설정하기
