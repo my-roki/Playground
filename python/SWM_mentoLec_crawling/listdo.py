@@ -90,7 +90,7 @@ if __name__ == "__main__":
             except Exception as e:
                 logging.warning(f"로그인 실패. 다시 시도합니다.(시도횟수 : {i})")
                 logging.warning(e)
-                time.sleep(1, 3)
+                time.sleep(random.randrange(1, 4))
                 continue
         else:
             logging.error("로그인 실행횟수 초과!")
