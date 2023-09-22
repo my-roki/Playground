@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: pod-multi
+spec:
+  containers:
+  - name: nginx-container
+    image: nginx:1.14
+    ports:
+    - containerPort: 80
+  - name: centos-container
+    image: centos:7
+    command: ["/bin/sh", "-c", "while : ;do curl http://localhost:80/; sleep 3; done"]
