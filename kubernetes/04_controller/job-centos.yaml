@@ -1,0 +1,18 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: job-centos
+spec:
+  completions: 5
+  parallelism: 4
+  activeDeadlineSeconds: 15
+  template:
+    spec:
+      containers:
+        - name: centos-container
+          image: centos:7
+          command: ["bash"]
+          args:
+            - "-c"
+            - "echo 'Hello World'; sleep 5; echo 'Bye'"
+      restartPolicy: Never
