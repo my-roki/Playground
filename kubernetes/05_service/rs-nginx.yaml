@@ -1,0 +1,19 @@
+apiVersion: apps/v1
+kind: ReplicaSet
+metadata:
+  name: my-service
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: appjs
+  template:
+    metadata:
+      labels:
+        app: appjs
+    spec:
+      containers:
+        - name: nginx-container
+          image: nginx:1.15
+          ports:
+            - containerPort: 80
