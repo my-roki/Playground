@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: Endpoints
+metadata:
+  name: svc-endpoint
+subsets:
+  - addresses:
+      - ip: 10.244.2.28
+      - ip: 10.244.1.27
+      - ip: 10.244.0.15
+    ports:
+      - port: 80
