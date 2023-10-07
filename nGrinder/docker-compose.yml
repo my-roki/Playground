@@ -1,0 +1,30 @@
+version: "3.8"
+services:
+  controller:
+    container_name: nGrinder-controller
+    image: ngrinder/controller
+    restart: always
+    ports:
+      - "4040:80"
+      - "16001:16001"
+      - "12000-12009:12000-12009"
+    volumes:
+      - ./ngrinder-controller:/opt/ngrinder-controller
+  agent1:
+    container_name: nGrinder-agent1
+    image: ngrinder/agent
+    restart: always
+    volumes:
+      - ./agent1:/opt/ngrinder-agent
+    links:
+      - controller
+  agent2:
+    container_name: nGrinder-agent2
+    image: ngrinder/agent
+    restart: always
+    volumes:clear
+      - ./agent2:/opt/ngrinder-agent
+    #command:
+    #- 10.24.3.42:9000
+    links:
+      - controller
