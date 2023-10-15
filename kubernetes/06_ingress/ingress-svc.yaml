@@ -1,0 +1,21 @@
+apiVersion: extension/v1
+kind: Ingress
+metadata:
+  name: ingress-svc
+spec:
+  rules:
+    - host: k8s-master
+      http:
+        paths:
+          - path: /
+            backend:
+              servicename: app-service
+              servicePort: 8080
+          - path: /dev
+              backend:
+                serviceName: dev
+                servicePort: 
+          - path: /prod
+              backend:
+                serviceName: prod
+                servicePort: 80

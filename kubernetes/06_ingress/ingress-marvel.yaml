@@ -1,0 +1,11 @@
+# apiVersion: extensions/v1beta1
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata: 
+  name: ingress-marvel
+spec:
+  defaultBackend:
+    service:
+      name: svc-marvel
+      port:
+        number: 80
