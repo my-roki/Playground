@@ -1,8 +1,11 @@
-# apiVersion: extensions/v1beta1
 apiVersion: networking.k8s.io/v1
 kind: Ingress
-metadata: 
+metadata:
   name: ingress-marvel
+  # kubectl describe deploy ingress-nginx-controller -n ingress-nginx | grep ingress-class
+  # ingress class가 잘 성정되어 있지만 찾지 못하는 경우 명시적으로 ingress class를 입력
+  annotations:
+    kubernetes.io/ingress.class: nginx
 spec:
   defaultBackend:
     service:
