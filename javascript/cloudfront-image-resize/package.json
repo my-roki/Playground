@@ -1,0 +1,17 @@
+{
+  "name": "cloudfront-image-resize",
+  "version": "1.0.0",
+  "description": "Automate image resizing using AWS lambda edge",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "aws-sdk": "^2.1406.0",
+    "heic-convert": "^1.2.4",
+    "querystring": "^0.2.1",
+    "sharp": "^0.32.1"
+  },
+  "author": "",
+  "license": "ISC"
+}
