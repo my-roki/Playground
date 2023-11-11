@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: exam-pod
+  namespace: dev # 네임스페이스 지정
+spec:
+  containers:
+    - name: nginx-container
+      image: nginx:1.14
+      ports:
+      - containerPort: 80
